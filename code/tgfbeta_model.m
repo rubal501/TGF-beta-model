@@ -1,6 +1,7 @@
 function dy = tgfbeta_model(t,y,p)
 
-    % Assign parameters to variables used in the rest of the function
+    %#ok<INUSD>
+    % Unpack model parameters from the input vector.
     N_A               = p(1);
     TGFbeta           = p(2);
     k2                = p(3);
@@ -18,7 +19,13 @@ function dy = tgfbeta_model(t,y,p)
     oemga_sf          = p(15);
     omega_S7SF        = p(16);
 
-    
+    % State vector:
+    % y(1) = TGFbeta_RA
+    % y(2) = rSMAD_A
+    % y(3) = rSMAD_I
+    % y(4) = SMAD7
+    % y(5) = SMURF_SMAD7
+    % y(6) = SMURF
     TGFbeta_RA = y(1);
     rSMAD_A = y(2);
     rSMAD_I = y(3);
@@ -26,21 +33,18 @@ function dy = tgfbeta_model(t,y,p)
     SMURF_SMAD7 = y(5);
     SMURF = y(6);
 
-    RegSMADA = (1/(1+SMAD7))* (TGFbeta_RA * hill(rSMAD_I, k2, 1) );
+    % Effective rSMAD activation is reduced by the inhibitory action of
+    % SMAD7 and modulated by the inactive rSMAD pool.
+    RegSMADA = (1/(1+SMAD7)) * (TGFbeta_RA * hill(rSMAD_I, k2, 1));
 
 
-    % d TGFB-Ra
-    dy1 = hill(TGFbeta,K_A,N_A) - delta_ss7 * SMURF_SMAD7 * TGFbeta_RA;
-    % d RSMAD_A
+    % ODE system for receptor activation, SMAD cycling, and SMURF feedback.
+    dy1 = hill(TGFbeta, K_A, N_A) - delta_ss7 * SMURF_SMAD7 * TGFbeta_RA;
     dy2 = RegSMADA - gamma_rssa * rSMAD_A - delta_rsma * rSMAD_A * SMURF;
-    % d RSMAD_I
     dy3 = gamma_rssa * rSMAD_A - RegSMADA ;
-    % d SMAD7
     dy4 = alpha_s7 * rSMAD_A - omega_s7 * SMAD7  ...
     - alpha_smurfsmad * SMAD7 * SMURF + omega_smurfsmad * SMURF_SMAD7;
-    % d SMURF_SMAD7
     dy5 = alpha_smurfsmad * SMAD7 * SMURF - omega_smurfsmad * SMURF_SMAD7;
-    % d SMURF 
     dy6 = alpha_sf * rSMAD_A - omega_SF * SMURF  ...
     - alpha_smurfsmad * SMURF * SMAD7 + omega_S7SF * SMURF_SMAD7;
 
@@ -52,5 +56,6 @@ end
 
 
 function H = hill(x,K,N)
+    % Standard Hill activation function.
     H = (x^N)/(K^N + x^N);
 end
