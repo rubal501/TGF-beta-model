@@ -1,4 +1,4 @@
-function dy = tgfbeta_model(t, y, p)
+function dy = tgfbeta_model(~, y, p)
 
 % Unpack model parameters from the input vector.
 N_A             = p(1);   % N_1      : exponente Hill (TGFbeta_RA)
