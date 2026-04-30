@@ -82,7 +82,7 @@ dy6 = alpha_sf * rSMAD_A ...
 eqs = [dy1 == 0, dy2 == 0, dy3 == 0, dy4 == 0, dy5 == 0, dy6 == 0];
 variables = [TGFbeta_RA rSMAD_A rSMAD_I SMAD7 SMURF_SMAD7 SMURF ];
 
-roots = vpasolve(eqs,variables);
+vpasolve(eqs,variables)
 
 
 
